@@ -1,0 +1,59 @@
+Perfect, now,
+I want to use python and visual studio code on my windows 11 computer to build such a game. 
+Here is how i want it to look like and function:
+
+basics
+snake collects beer or food 
+timer runs for 100s, this is the length of the game
+collect as many points as possible in 200s
+attributes: points, size, drunk (, energy)
+
+
+
+
+collecting points and items: 
+- food: +1 point, +1 size, -1 drunk
+- beer: +3 points, +0 size, +1 drunk 
+food gives 1 point but adds size: not only length, but also fat (the body of the snakes becomes wider, growth of length and width of body should change at random)
+drunk: add random movement of body and add slight random shifts in direction
+
+
+
+
+
+
+
+more ideas to add later: 
+
+
+Reverse Mode – collecting a big beer, +10 points, +5 drunkness, also the controls reverse randomly for 10s , causing confusion. 
+
+
+Screaming Apples – When the snake eats food, have the food "scream" or make a funny sound.
+
+
+
+Snake Physics Mode – Instead of a grid-based movement, make the snake wiggle and move with a physics-based system.
+
+
+Food Prank – Some food is fake and makes the snake shrink instead of grow, or adds other kinds of penalty. 
+
+
+Gassy Snake – Eating too much makes the snake fart, which can propel it forward at high speed or confuse controls.
+
+
+
+Snake Gets Tired – Energy bar, drops a little with every turn, but refills slowly when not turning. If you move too much (too many turns in quick succession), and the energy bar is empty, the snake starts panting and slows down, forcing you to take "breaks." 
+
+
+
+Snake Sings – The snake hums or sings a tune that changes depending on its length, width, food or drunkenness 
+
+
+stumble randomly after drunkenness higher than 10 points or so
+ 
+
+hitting a wall stops the snake for a short time, the drunker the longer the snake stops
+
+
+Help me create an appropriate virtual environment and help me do everything else to implement this program. Note that I am using git as well and I am able to push to git via visual studio code. Let's implement the basic core of the game first and than all additional attributes. If you have questions on details of the simulation to make it as close to what I imagine as possible, please feel free to ask me anything before you start.
