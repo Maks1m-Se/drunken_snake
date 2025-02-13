@@ -32,6 +32,9 @@ drink_sound = pygame.mixer.Sound("assets/sounds/drink.mp3")
 drink_sound.set_volume(.9)
 drink_long_sound = pygame.mixer.Sound("assets/sounds/drink_long.mp3")
 drink_long_sound.set_volume(.9)
+squeeky_sound = pygame.mixer.Sound("assets/sounds/squeeky.mp3")
+squeeky_sound.set_volume(.9)
+
 
 beep_sound = pygame.mixer.Sound("assets/sounds/short_beep.wav")
 go_sound = pygame.mixer.Sound("assets/sounds/go.wav")
@@ -45,8 +48,8 @@ go_sound.set_volume(.5)
 crash_sound.set_volume(.5)
 honk_sound.set_volume(.7)
 honk2_sound.set_volume(.7)
-burp_sound.set_volume(.9)
-burp_long_sound.set_volume(.9)
+burp_sound.set_volume(1.5)
+burp_long_sound.set_volume(1.5)
 random_sounds = [honk_sound, honk2_sound, burp_sound, burp_long_sound]
 last_sound_time = 5
 play_beep = False
@@ -58,11 +61,12 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Drunken Snake")
 
 # Colors
-WHITE = (255, 255, 255)
-LIGHTBLUE = (231, 233, 250)
+WHITE = (240, 245, 235)
+LIGHTBLUE = (220, 220, 240)
 LIGHTRED = (250, 211, 215)
 YELLOWBLACK = (184, 178, 169)
 GREEN = (36, 95, 29)
+LIGHTGREEN = (66, 173, 54)
 BROWN = (139, 69, 19)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
@@ -97,9 +101,9 @@ food_image2 = random.choice(food_images)
 
 # Snake properties
 snake_pos = [WIDTH // 2, math.floor(HEIGHT*0.65)]
-snake_body = [[WIDTH // 2, HEIGHT // 2]]
+snake_body = [[WIDTH // 2, math.floor(HEIGHT*0.65)]]
 snake_speed = 1.8
-snake_angle = 0  # Movement direction
+snake_angle = random.randint(0,359)  # Movement direction
 snake_length = 50
 snake_width = 10
 fat_factor = 1
@@ -359,10 +363,14 @@ while game_running:
     snake_head_counter = len(snake_body)
     fat_factor = 1
     for i, pos in enumerate(snake_body):
+        if i % 7 == 0:
+            SNAKE_COL = LIGHTGREEN
+        else:
+            SNAKE_COL = GREEN
         if snake_head_counter <= 2+snake_width//4:
             pygame.draw.circle(screen, GREEN, pos, 5 + snake_width//5)
         else:
-            pygame.draw.circle(screen, GREEN, pos, snake_width//2 * fat_factor)
+            pygame.draw.circle(screen, SNAKE_COL, pos, snake_width//2 * fat_factor)
         if i < len(snake_body)//2:
             fat_factor += 0.03
         else:
@@ -381,6 +389,53 @@ while game_running:
             break_snake_loop = True
             break
 
+    #print('snake_angle ', snake_angle)
+
+    # check for WALL COLLISION
+    if time_left != 0:
+        time_wait_wall = int(30000/time_left)
+    if snake_pos[0] <= 0:
+        squeeky_sound.play()
+        print(time_wait_wall)
+        pygame.time.wait(time_wait_wall)
+        snake_pos[0] = 5
+        points -= 1
+        if direction_y >= 0:
+            snake_angle = 70
+        else:
+            snake_angle = -70
+    if snake_pos[0] >= WIDTH:
+        squeeky_sound.play()
+        print(time_wait_wall)
+        pygame.time.wait(time_wait_wall)
+        snake_pos[0] = WIDTH-5
+        points -= 1
+        if direction_y >= 0:
+            snake_angle = 110
+        else:
+            snake_angle = -110
+    if snake_pos[1] <= 0:
+        squeeky_sound.play()
+        print(time_wait_wall)
+        pygame.time.wait(time_wait_wall)
+        snake_pos[1] = 5
+        points -= 1
+        if direction_x >= 0:
+            snake_angle = 20
+        else:
+            snake_angle = 160
+    if snake_pos[1] >= HEIGHT:
+        squeeky_sound.play()
+        print(time_wait_wall)
+        pygame.time.wait(time_wait_wall)
+        snake_pos[1] = HEIGHT-5
+        points -= 1
+        if direction_x >= 0:
+            snake_angle = -20
+        else:
+            snake_angle = 200
+
+
 
     
     ## debugg collision
@@ -394,7 +449,7 @@ while game_running:
     display_text(f'{drunkness/10}‰', 60, BLACK, (WIDTH//2-10, 10))
     display_text(f'Speed: {snake_speed}', 20, GREY, (10, 90))
     
-    # random sounds
+
     # Play a random sound every 10 seconds
     if pygame.time.get_ticks() - last_sound_time >= random.randint(5000, 10000):
         print('PLAY random sound')
