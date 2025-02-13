@@ -14,7 +14,7 @@ pygame.mixer.init()
 # pygame.mixer.music.set_volume(.7)
 rosie_music = pygame.mixer.Sound("assets/music/rosie_remix.mp3")
 rosie_music.set_volume(.7)
-rosie_music.play()
+
 
 
 # Load sound effects
@@ -59,6 +59,7 @@ HEIGHT = 800
 WIDTH = int(HEIGHT+HEIGHT*1/3)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Drunken Snake")
+button_font = pygame.font.Font(None, 25)
 
 # Colors
 WHITE = (240, 245, 235)
@@ -71,7 +72,6 @@ BROWN = (139, 69, 19)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 GREY = (151, 150, 148)
-
 BG_COLOR = WHITE
 
 # Game settings
@@ -119,8 +119,7 @@ food_spawned = True
 beer_spawned = True
 display_big_beer = False
 
-# Timer
-start_time = pygame.time.get_ticks()
+
 
 def display_text(text, size, color, position):
     font = pygame.font.SysFont(None, size)
@@ -131,351 +130,436 @@ def display_text(text, size, color, position):
 pre_game_time = 18500  # 18 seconds before game starts
 fade_time = 3000  # 3 seconds fade duration
 countdown_time = 10000  # 10 seconds countdown
-old_countdown_value = 100
-
-game_start_time = pygame.time.get_ticks() + pre_game_time
-fade_start_time = pygame.time.get_ticks() + 5000  # 5 seconds after start
-countdown_start_time = fade_start_time + fade_time
 
 pregame_running = True
 game_running = True
 results_running = True
 
-clock = pygame.time.Clock()
-while pygame.time.get_ticks() < game_start_time and pregame_running:
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pregame_running = False
-            game_running = False
-            results_running = False
 
-    screen.fill(BG_COLOR)
+def pregame_loop():
+    global pregame_running, game_running, results_running, old_countdown_value, clock, points
+    print('PREGAME LOOP')
+
+    clock = pygame.time.Clock()
+
+    pygame.mixer.stop()
+    rosie_music.play()
+
+    TIMER = 85  # Game length in seconds
+    points = 0
+    BG_COLOR = WHITE
     
-    # Draw initial play field with snake
-    # for i in range(0, snake_length):
-    #     pygame.draw.circle(screen, GREEN, [WIDTH // 2  - i, math.floor(HEIGHT*0.65)], snake_width // 2)
-    screen.blit(food_image1, food_pos1)
-    screen.blit(food_image2, food_pos2)
-    screen.blit(beer_image, beer_pos1)
-    screen.blit(beer_image, beer_pos2)
+    old_countdown_value = 100
 
-    # Display HUD
-    display_text(f'Points: {points}', 36, BLACK, (10, 10))
-    display_text(f'{int(TIMER)}s', 36, BLACK, (10, 50))
-    display_text(f'{drunkness/10}‰', 60, BLACK, (WIDTH//2-10, 10))
-    display_text(f'Speed: {snake_speed}', 20, GREY, (10, 90))
-    
-    elapsed = pygame.time.get_ticks()
-    if elapsed < fade_start_time:
-        screen.fill(GREY)
-        screen.blit(start_image, (WIDTH//2-HEIGHT//2, 0))
-    elif elapsed < countdown_start_time:
-        fade_alpha = int(255 * (1 - (elapsed - fade_start_time) / fade_time))
-        fade_surface = pygame.Surface((WIDTH, HEIGHT))
-        fade_surface.fill(WHITE)
-        fade_surface.set_alpha(fade_alpha)
-        screen.blit(fade_surface, (0, 0))
+    game_start_time = pygame.time.get_ticks() + pre_game_time
+    fade_start_time = pygame.time.get_ticks() + 5000  # 5 seconds after start
+    countdown_start_time = fade_start_time + fade_time
 
-    	# Display INFO
-        display_text(f'Beer: 3 Points', 50, BLACK, (WIDTH//2 - 200, HEIGHT//2 + 100))
-        display_text(f'Food: 1 Points', 50, BLACK, (WIDTH//2 - 200, HEIGHT//2 + 140))
-        display_text(f'Big Beer: 7 Points', 50, BLACK, (WIDTH//2 - 200, HEIGHT//2 + 180))
-        display_text(f'Collect as many points as possible!', 50, BLACK, (WIDTH//2 - 200, HEIGHT//2 + 240))
-    else:
-        countdown_value = max(0, 10 - (elapsed - countdown_start_time) // 1000)
-        #print('countdown_value', countdown_value) #### DEBUGGING
-        #print('old_countdown_value', old_countdown_value) #### DEBUGGING
-        #print('play_beep', play_beep) #### DEBUGGING
-        if countdown_value != old_countdown_value:
-            play_beep = True
-            old_countdown_value = countdown_value
-        if countdown_value > 0:
-            if play_beep and countdown_value < 6:
-                play_beep = False
-                beep_sound.play()
-            display_text(f"{countdown_value}", 300, RED, (WIDTH//2 - 30, HEIGHT//3-100))
-            
+    while pygame.time.get_ticks() < game_start_time and pregame_running:
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pregame_running = False
+                game_running = False
+                results_running = False
+
+        screen.fill(BG_COLOR)
+        
+        # Draw initial play field with snake
+        # for i in range(0, snake_length):
+        #     pygame.draw.circle(screen, GREEN, [WIDTH // 2  - i, math.floor(HEIGHT*0.65)], snake_width // 2)
+        screen.blit(food_image1, food_pos1)
+        screen.blit(food_image2, food_pos2)
+        screen.blit(beer_image, beer_pos1)
+        screen.blit(beer_image, beer_pos2)
+
+        # Display HUD
+        display_text(f'Points: {points}', 36, BLACK, (10, 10))
+        display_text(f'{int(TIMER)}s', 36, BLACK, (10, 50))
+        display_text(f'{drunkness/10}‰', 60, BLACK, (WIDTH//2-10, 10))
+        display_text(f'Speed: {snake_speed}', 20, GREY, (10, 90))
+        
+        elapsed = pygame.time.get_ticks()
+        if elapsed < fade_start_time:
+            screen.fill(GREY)
+            screen.blit(start_image, (WIDTH//2-HEIGHT//2, 0))
+        elif elapsed < countdown_start_time:
+            fade_alpha = int(255 * (1 - (elapsed - fade_start_time) / fade_time))
+            fade_surface = pygame.Surface((WIDTH, HEIGHT))
+            fade_surface.fill(WHITE)
+            fade_surface.set_alpha(fade_alpha)
+            screen.blit(fade_surface, (0, 0))
+
             # Display INFO
             display_text(f'Beer: 3 Points', 50, BLACK, (WIDTH//2 - 200, HEIGHT//2 + 100))
             display_text(f'Food: 1 Points', 50, BLACK, (WIDTH//2 - 200, HEIGHT//2 + 140))
             display_text(f'Big Beer: 7 Points', 50, BLACK, (WIDTH//2 - 200, HEIGHT//2 + 180))
             display_text(f'Collect as many points as possible!', 50, BLACK, (WIDTH//2 - 200, HEIGHT//2 + 240))
         else:
-            if play_beep:
-                play_beep = False
-                go_sound.play()
-            display_text("GO!", 330, RED, (WIDTH//2 - 180, HEIGHT//3-100))
+            countdown_value = max(0, 10 - (elapsed - countdown_start_time) // 1000)
+            #print('countdown_value', countdown_value) #### DEBUGGING
+            #print('old_countdown_value', old_countdown_value) #### DEBUGGING
+            #print('play_beep', play_beep) #### DEBUGGING
+            if countdown_value != old_countdown_value:
+                play_beep = True
+                old_countdown_value = countdown_value
+            if countdown_value > 0:
+                if play_beep and countdown_value < 6:
+                    play_beep = False
+                    beep_sound.play()
+                display_text(f"{countdown_value}", 300, RED, (WIDTH//2 - 30, HEIGHT//3-100))
+                
+                # Display INFO
+                display_text(f'Beer: 3 Points', 50, BLACK, (WIDTH//2 - 200, HEIGHT//2 + 100))
+                display_text(f'Food: 1 Points', 50, BLACK, (WIDTH//2 - 200, HEIGHT//2 + 140))
+                display_text(f'Big Beer: 7 Points', 50, BLACK, (WIDTH//2 - 200, HEIGHT//2 + 180))
+                display_text(f'Collect as many points as possible!', 50, BLACK, (WIDTH//2 - 200, HEIGHT//2 + 240))
+            else:
+                if play_beep:
+                    play_beep = False
+                    go_sound.play()
+                display_text("GO!", 330, RED, (WIDTH//2 - 180, HEIGHT//3-100))
 
-            
-    
-    
-    
-    pygame.display.update()
-    clock.tick(FPS)
+        pygame.display.update()
+        clock.tick(FPS)
 
-# Main loop
+def restart_main_loop():
+    global pregame_running, game_running, results_running, old_countdown_value, clock
+    global snake_pos, snake_body, snake_speed, snake_angle, snake_length, snake_width, fat_factor
+    global drunkness, food_pos1, food_pos2, beer_pos1, beer_pos2
+    print('RESTART LOOP')
 
-start_time = pygame.time.get_ticks()
-while game_running:
-    screen.fill(BG_COLOR)
-    
-    # Calculate time remaining
-    elapsed_time = (pygame.time.get_ticks() - start_time) / 1000
-    time_left = max(0, TIMER - elapsed_time)
-    if time_left <= 0:
-        game_running = False
-    
-    # display big beer on
-    if int(time_left) == 70 and not display_big_beer:
-        display_big_beer = True
-        big_beer_pos = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
-    if int(time_left) == 55 and not display_big_beer:
-        display_big_beer = True
-        big_beer_pos = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
-    if int(time_left) == 30 and not display_big_beer:
-        display_big_beer = True
-        big_beer_pos = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
-    if int(time_left) == 15 and not display_big_beer:
-        display_big_beer = True
-        big_beer_pos = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
+    pregame_running = True
+    game_running = True
+    results_running = True
 
-
-    # speed adjustment
-    if time_left <= 72:
-        snake_speed = 2
-        BG_COLOR = LIGHTBLUE
-    if time_left <= 44:
-        snake_speed = 3
-        BG_COLOR = LIGHTRED
-    if time_left <= 26:
-        snake_speed = 4
-        BG_COLOR = YELLOWBLACK
-    
-    # Event handling
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            game_running = False
-            results_running = False
-    
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]:
-        snake_angle -= 3  # Smooth turn left
-    if keys[pygame.K_RIGHT]:
-        snake_angle += 3  # Smooth turn right
-    if event.type == pygame.MOUSEBUTTONDOWN:
-        mouse_pos = pygame.mouse.get_pos()
-        print('mouse_pos: ', mouse_pos)
-        if mouse_pos[0] < WIDTH//2:
-            snake_angle -= 3  # Smooth turn left
-        if mouse_pos[0] > WIDTH//2:
-            snake_angle += 3  # Smooth turn right
-
-    
-    # Drunk movement effect
-    if drunkness > 0:
-        # direction_x += np.random.laplace(0, drunkness / 30, 1)[0]
-        # direction_y += np.random.laplace(0, drunkness / 30, 1)[0]
-        snake_angle += np.random.laplace(0, drunkness / 3, 1)[0]
-        #direction_x += (np.random.standard_cauchy(1) * (drunkness / 50))[0] # zu stark
-        #direction_y += (np.random.standard_cauchy(1) * (drunkness / 50))[0]
-    
-    # Calculate movement with angle
-    direction_x = math.cos(math.radians(snake_angle)) * snake_speed
-    direction_y = math.sin(math.radians(snake_angle)) * snake_speed
-    
-    
-    
-    # Update snake position
-    snake_pos[0] += direction_x
-    snake_pos[1] += direction_y
-    snake_body.append(list(snake_pos))
-    if len(snake_body) > snake_length:
-        del snake_body[0]
-
-    # Check for food1 collision
-    if math.dist(snake_pos, food_pos1 + item_size//2) < (snake_width+item_size//2):
-        food_pos1 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
-        food_image1 = random.choice(food_images)  # Change food image on new spawn
-        nom_sound.play()
-        if random.choice([True, False]):
-            grow_length = random.randint(20, 30)  # Randomly grow in length
-            snake_length += grow_length
-            print('grow length:', grow_length)
-            stretch_sound.play()
-        else:
-            grow_width = random.randint(3, 5)  # Randomly grow in width
-            snake_width += grow_width  # Randomly grow in width
-            print('grow width:', grow_width)
-            grow_sound.play()
-        drunkness = max(0, drunkness - 1)  # Reduce drunkness
-        points += 1
-    # Check for food2 collision
-    if math.dist(snake_pos, food_pos2 + item_size//2) < (snake_width+item_size//2):
-        food_pos2 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
-        food_image2 = random.choice(food_images)  # Change food image on new spawn
-        nom_sound.play()
-        if random.choice([True, False]):
-            grow_length = random.randint(20, 30)  # Randomly grow in length
-            snake_length += grow_length
-            print('grow length:', grow_length)
-            stretch_sound.play()
-        else:
-            grow_width = random.randint(3, 5)  # Randomly grow in width
-            snake_width += grow_width  # Randomly grow in width
-            print('grow width:', grow_width)
-            grow_sound.play()
-        drunkness = max(0, drunkness - 1)  # Reduce drunkness
-        points += 1
-    
-    #print(food_pos)
-    # Check for beer1 collision
-    if math.dist(snake_pos, beer_pos1 + item_size//2) < (snake_width+item_size//2):
-        beer_pos1 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
-        drink_sound.play()
-        drunkness += 2  # Increase drunk effect
-        points += 3
-    # Check for beer2 collision
-    if math.dist(snake_pos, beer_pos2 + item_size//2) < (snake_width+item_size//2):
-        beer_pos2 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
-        drink_sound.play()
-        drunkness += 2  # Increase drunk effect
-        points += 3
-
-    # Check for big_beer collision
-    if display_big_beer:
-        if math.dist(snake_pos, big_beer_pos + item_size) < (snake_width+item_size):
-            drink_long_sound.play()
-            drunkness += 6  # Increase drunk effect
-            points += 7
-            display_big_beer = False
-
-    
-    # Draw food and beer using images
-    screen.blit(food_image1, food_pos1)
-    screen.blit(food_image2, food_pos2)
-    screen.blit(beer_image, beer_pos1)
-    screen.blit(beer_image, beer_pos2)
-    if display_big_beer:
-        screen.blit(big_beer_image, big_beer_pos)
-    
-    # Draw snake
-    snake_head_counter = len(snake_body)
+    # Snake properties
+    snake_pos = [WIDTH // 2, math.floor(HEIGHT*0.65)]
+    snake_body = [[WIDTH // 2, math.floor(HEIGHT*0.65)]]
+    snake_speed = 1.8
+    snake_angle = random.randint(0,359)  # Movement direction
+    snake_length = 50
+    snake_width = 10
     fat_factor = 1
-    for i, pos in enumerate(snake_body):
-        if i % 7 == 0:
-            SNAKE_COL = LIGHTGREEN
-        else:
-            SNAKE_COL = GREEN
-        if snake_head_counter <= 2+snake_width//4:
-            pygame.draw.circle(screen, GREEN, pos, 5 + snake_width//5)
-        else:
-            pygame.draw.circle(screen, SNAKE_COL, pos, snake_width//2 * fat_factor)
-        if i < len(snake_body)//2:
-            fat_factor += 0.03
-        else:
-            fat_factor -= 0.03
-        snake_head_counter -= 1
 
-    # check for snake body collision
-    break_snake_loop = False
-    for snake_segment_pos in snake_body[:-(30+snake_width//2)]:
-        #pygame.draw.circle(screen, RED, snake_segment_pos, 2)
-        if math.dist(snake_pos, snake_segment_pos) < snake_width:
-            pygame.mixer.stop()
-            crash_sound.play()
+    drunkness = 0  # Determines wobbly movement
+
+    # Food and Beer properties
+    food_pos1 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
+    food_pos2 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
+    beer_pos1 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
+    beer_pos2 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
+
+    pregame_loop()
+    main_loop()
+
+def results_loop():
+    global results_running, clock, button_font
+    print('RESULTS LOOP')
+
+    pygame.mixer.stop()
+    heaven_music.play()
+
+
+    while results_running:
+        BG_COLOR = WHITE
+        screen.fill(BG_COLOR)
+        
+        # Buttons
+        button_restart_color = (50, 50, 150)  
+        button_restart_hover_color = (70, 70, 200)  
+        button_restart_text_color = (255, 255, 255)  
+        buttons = [
+            {"rect": pygame.Rect(WIDTH//2, HEIGHT - 100, 100, 30), "label": "RESTART", "action": restart_main_loop},
+        ]
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                results_running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                for button in buttons:
+                    if button["rect"].collidepoint(event.pos):
+                        button["action"]()
+
+        # Draw buttons
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        for button in buttons:
+            rect = button["rect"]
+            color = button_restart_hover_color if rect.collidepoint(mouse_x, mouse_y) else button_restart_color  
+            pygame.draw.rect(screen, color, rect, border_radius=10)  
+            label_surface = button_font.render(button["label"], True, button_restart_text_color)
+            screen.blit(label_surface, (rect.x + 10, rect.y + 5))  
+
+        display_text(f'GAME OVER', 150, RED, (WIDTH//5, 200))
+        display_text(f'Points: {points}', 100, BLACK, (WIDTH//4, 350))
+        display_text(f'{drunkness/10}‰', 45, BLACK, (WIDTH//3, 450))
+        pygame.display.update()
+        clock.tick(FPS)
+
+def main_loop():
+    global game_running, results_running, BG_COLOR, drunkness, points
+    global last_sound_time
+    global break_snake_loop, snake_angle, snake_speed, snake_length, snake_width
+    global food_pos1, food_pos2, beer_pos1, beer_pos2, big_beer_pos, display_big_beer
+    global food_image1, food_image2, beer_image, big_beer_image
+    print('MAIN LOOP')
+    
+    
+    
+    start_time = pygame.time.get_ticks()
+
+    while game_running:
+        screen.fill(BG_COLOR)
+        
+        # Calculate time remaining
+        elapsed_time = (pygame.time.get_ticks() - start_time) / 1000
+        time_left = max(0, TIMER - elapsed_time)
+        if time_left <= 0:
             game_running = False
-            pygame.time.wait(2000)
-            break_snake_loop = True
-            break
-
-    #print('snake_angle ', snake_angle)
-
-    # check for WALL COLLISION
-    if time_left != 0:
-        time_wait_wall = int(30000/time_left)
-    if snake_pos[0] <= 0:
-        squeeky_sound.play()
-        print(time_wait_wall)
-        pygame.time.wait(time_wait_wall)
-        snake_pos[0] = 5
-        points -= 1
-        if direction_y >= 0:
-            snake_angle = 70
-        else:
-            snake_angle = -70
-    if snake_pos[0] >= WIDTH:
-        squeeky_sound.play()
-        print(time_wait_wall)
-        pygame.time.wait(time_wait_wall)
-        snake_pos[0] = WIDTH-5
-        points -= 1
-        if direction_y >= 0:
-            snake_angle = 110
-        else:
-            snake_angle = -110
-    if snake_pos[1] <= 0:
-        squeeky_sound.play()
-        print(time_wait_wall)
-        pygame.time.wait(time_wait_wall)
-        snake_pos[1] = 5
-        points -= 1
-        if direction_x >= 0:
-            snake_angle = 20
-        else:
-            snake_angle = 160
-    if snake_pos[1] >= HEIGHT:
-        squeeky_sound.play()
-        print(time_wait_wall)
-        pygame.time.wait(time_wait_wall)
-        snake_pos[1] = HEIGHT-5
-        points -= 1
-        if direction_x >= 0:
-            snake_angle = -20
-        else:
-            snake_angle = 200
+        
+        # display big beer on
+        if int(time_left) == 70 and not display_big_beer:
+            display_big_beer = True
+            big_beer_pos = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
+        if int(time_left) == 55 and not display_big_beer:
+            display_big_beer = True
+            big_beer_pos = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
+        if int(time_left) == 30 and not display_big_beer:
+            display_big_beer = True
+            big_beer_pos = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
+        if int(time_left) == 15 and not display_big_beer:
+            display_big_beer = True
+            big_beer_pos = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
 
 
+        # speed adjustment
+        if time_left <= 72:
+            snake_speed = 2
+            BG_COLOR = LIGHTBLUE
+        if time_left <= 44:
+            snake_speed = 3
+            BG_COLOR = LIGHTRED
+        if time_left <= 26:
+            snake_speed = 4
+            BG_COLOR = YELLOWBLACK
+        
+        # Event handling
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_running = False
+                results_running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    print('mouse_pos: ', mouse_pos)
+                    if mouse_pos[0] < WIDTH//2:
+                        snake_angle -= 3  # Smooth turn left
+                    if mouse_pos[0] > WIDTH//2:
+                        snake_angle += 3  # Smooth turn right
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            snake_angle -= 3  # Smooth turn left
+        if keys[pygame.K_RIGHT]:
+            snake_angle += 3  # Smooth turn right
+            
 
+        
+        # Drunk movement effect
+        if drunkness > 0:
+            # direction_x += np.random.laplace(0, drunkness / 30, 1)[0]
+            # direction_y += np.random.laplace(0, drunkness / 30, 1)[0]
+            snake_angle += np.random.laplace(0, drunkness / 3, 1)[0]
+            #direction_x += (np.random.standard_cauchy(1) * (drunkness / 50))[0] # zu stark
+            #direction_y += (np.random.standard_cauchy(1) * (drunkness / 50))[0]
+        
+        # Calculate movement with angle
+        direction_x = math.cos(math.radians(snake_angle)) * snake_speed
+        direction_y = math.sin(math.radians(snake_angle)) * snake_speed
+        
+        
+        
+        # Update snake position
+        snake_pos[0] += direction_x
+        snake_pos[1] += direction_y
+        snake_body.append(list(snake_pos))
+        if len(snake_body) > snake_length:
+            del snake_body[0]
+
+        # Check for food1 collision
+        if math.dist(snake_pos, food_pos1 + item_size//2) < (snake_width+item_size//2):
+            food_pos1 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
+            food_image1 = random.choice(food_images)  # Change food image on new spawn
+            nom_sound.play()
+            if random.choice([True, False]):
+                grow_length = random.randint(20, 30)  # Randomly grow in length
+                snake_length += grow_length
+                print('grow length:', grow_length)
+                stretch_sound.play()
+            else:
+                grow_width = random.randint(3, 5)  # Randomly grow in width
+                snake_width += grow_width  # Randomly grow in width
+                print('grow width:', grow_width)
+                grow_sound.play()
+            drunkness = max(0, drunkness - 1)  # Reduce drunkness
+            points += 1
+        # Check for food2 collision
+        if math.dist(snake_pos, food_pos2 + item_size//2) < (snake_width+item_size//2):
+            food_pos2 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
+            food_image2 = random.choice(food_images)  # Change food image on new spawn
+            nom_sound.play()
+            if random.choice([True, False]):
+                grow_length = random.randint(20, 30)  # Randomly grow in length
+                snake_length += grow_length
+                print('grow length:', grow_length)
+                stretch_sound.play()
+            else:
+                grow_width = random.randint(3, 5)  # Randomly grow in width
+                snake_width += grow_width  # Randomly grow in width
+                print('grow width:', grow_width)
+                grow_sound.play()
+            drunkness = max(0, drunkness - 1)  # Reduce drunkness
+            points += 1
+        
+        #print(food_pos)
+        # Check for beer1 collision
+        if math.dist(snake_pos, beer_pos1 + item_size//2) < (snake_width+item_size//2):
+            beer_pos1 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
+            drink_sound.play()
+            drunkness += 2  # Increase drunk effect
+            points += 3
+        # Check for beer2 collision
+        if math.dist(snake_pos, beer_pos2 + item_size//2) < (snake_width+item_size//2):
+            beer_pos2 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
+            drink_sound.play()
+            drunkness += 2  # Increase drunk effect
+            points += 3
+
+        # Check for big_beer collision
+        if display_big_beer:
+            if math.dist(snake_pos, big_beer_pos + item_size) < (snake_width+item_size):
+                drink_long_sound.play()
+                drunkness += 6  # Increase drunk effect
+                points += 7
+                display_big_beer = False
+
+        
+        # Draw food and beer using images
+        screen.blit(food_image1, food_pos1)
+        screen.blit(food_image2, food_pos2)
+        screen.blit(beer_image, beer_pos1)
+        screen.blit(beer_image, beer_pos2)
+        if display_big_beer:
+            screen.blit(big_beer_image, big_beer_pos)
+        
+        # Draw snake
+        snake_head_counter = len(snake_body)
+        fat_factor = 1
+        for i, pos in enumerate(snake_body):
+            if i % 7 == 0:
+                SNAKE_COL = LIGHTGREEN
+            else:
+                SNAKE_COL = GREEN
+            if snake_head_counter <= 2+snake_width//4:
+                pygame.draw.circle(screen, GREEN, pos, 5 + snake_width//5)
+            else:
+                pygame.draw.circle(screen, SNAKE_COL, pos, snake_width//2 * fat_factor)
+            if i < len(snake_body)//2:
+                fat_factor += 0.03
+            else:
+                fat_factor -= 0.03
+            snake_head_counter -= 1
+
+        # check for snake body collision
+        break_snake_loop = False
+        for snake_segment_pos in snake_body[:-(30+snake_width//2)]:
+            #pygame.draw.circle(screen, RED, snake_segment_pos, 2)
+            if math.dist(snake_pos, snake_segment_pos) < snake_width:
+                pygame.mixer.stop()
+                crash_sound.play()
+                game_running = False
+                pygame.time.wait(2000)
+                break_snake_loop = True
+                break
+
+        #print('snake_angle ', snake_angle)
+
+        # check for WALL COLLISION
+        if time_left != 0:
+            time_wait_wall = int(30000/time_left)
+        if snake_pos[0] <= 0:
+            squeeky_sound.play()
+            print(time_wait_wall)
+            pygame.time.wait(time_wait_wall)
+            snake_pos[0] = 5
+            points -= 1
+            if direction_y >= 0:
+                snake_angle = 70
+            else:
+                snake_angle = -70
+        if snake_pos[0] >= WIDTH:
+            squeeky_sound.play()
+            print(time_wait_wall)
+            pygame.time.wait(time_wait_wall)
+            snake_pos[0] = WIDTH-5
+            points -= 1
+            if direction_y >= 0:
+                snake_angle = 110
+            else:
+                snake_angle = -110
+        if snake_pos[1] <= 0:
+            squeeky_sound.play()
+            print(time_wait_wall)
+            pygame.time.wait(time_wait_wall)
+            snake_pos[1] = 5
+            points -= 1
+            if direction_x >= 0:
+                snake_angle = 20
+            else:
+                snake_angle = 160
+        if snake_pos[1] >= HEIGHT:
+            squeeky_sound.play()
+            print(time_wait_wall)
+            pygame.time.wait(time_wait_wall)
+            snake_pos[1] = HEIGHT-5
+            points -= 1
+            if direction_x >= 0:
+                snake_angle = -20
+            else:
+                snake_angle = 200
+
+
+
+        
+        ## debugg collision
+        # pygame.draw.circle(screen, RED, food_pos1 + item_size//2, 4)
+        # pygame.draw.circle(screen, RED, beer_pos2 + item_size//2, 4)
+        # pygame.draw.circle(screen, RED, snake_pos, 4)
+
+        # Display HUD
+        display_text(f'Points: {points}', 36, BLACK, (10, 10))
+        display_text(f'{int(time_left)}s', 36, BLACK, (10, 50))
+        display_text(f'{drunkness/10}‰', 60, BLACK, (WIDTH//2-10, 10))
+        display_text(f'Speed: {snake_speed}', 20, GREY, (10, 90))
+        
+
+        # Play a random sound every 10 seconds
+        if pygame.time.get_ticks() - last_sound_time >= random.randint(5000, 10000):
+            print('PLAY random sound')
+            random.choice(random_sounds).play()
+            last_sound_time = pygame.time.get_ticks()
+
+
+        pygame.display.update()
+        clock.tick(FPS)
     
-    ## debugg collision
-    # pygame.draw.circle(screen, RED, food_pos1 + item_size//2, 4)
-    # pygame.draw.circle(screen, RED, beer_pos2 + item_size//2, 4)
-    # pygame.draw.circle(screen, RED, snake_pos, 4)
-
-    # Display HUD
-    display_text(f'Points: {points}', 36, BLACK, (10, 10))
-    display_text(f'{int(time_left)}s', 36, BLACK, (10, 50))
-    display_text(f'{drunkness/10}‰', 60, BLACK, (WIDTH//2-10, 10))
-    display_text(f'Speed: {snake_speed}', 20, GREY, (10, 90))
-    
-
-    # Play a random sound every 10 seconds
-    if pygame.time.get_ticks() - last_sound_time >= random.randint(5000, 10000):
-        print('PLAY random sound')
-        random.choice(random_sounds).play()
-        last_sound_time = pygame.time.get_ticks()
+    ## RESULTS LOOP
+    results_loop()
 
 
-    pygame.display.update()
-    clock.tick(FPS)
+pregame_loop()
 
-print('TEST Transition END')
-pygame.mixer.stop()
-heaven_music.play()
+main_loop()
 
-while results_running:
-    BG_COLOR = WHITE
-    screen.fill(BG_COLOR)
-    
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            results_running = False
 
-    display_text(f'GAME OVER', 150, RED, (WIDTH//5, 200))
-    display_text(f'Points: {points}', 100, BLACK, (WIDTH//4, 350))
-    display_text(f'{drunkness/10}‰', 45, BLACK, (WIDTH//3, 450))
-    pygame.display.update()
-    clock.tick(FPS)
 
 pygame.quit()
