@@ -594,10 +594,15 @@ async def main_loop():
     await asyncio.sleep(0)
 
 
-asyncio.run(pregame_loop())
 
-asyncio.run(main_loop())
+# Run the app
+# Combine both loops in a single coroutine
+async def run_all():
+    await pregame_loop()
+    await main_loop()
 
+# Single run
+asyncio.run(run_all())
 
 
 pygame.quit()
