@@ -1,62 +1,74 @@
+# /// script
+# dependencies = [
+#  "pygame",
+#  "random",
+#  "math",
+#  "numpy",
+#  "os",
+#  "asyncio",
+# ]
+# ///
+
 import pygame
 import random
 import math
 import numpy as np
 import os
+import asyncio
 
 # Initialize Pygame
 pygame.init()
 
 # Load and Play Background Music
 pygame.mixer.init()
-# pygame.mixer.music.load("assets/music/rosie_remix.mp3")
+# pygame.mixer.music.load("assets/music/rosie_remix.ogg")
 # pygame.mixer.music.play()
 # pygame.mixer.music.set_volume(.7)
-rosie_music = pygame.mixer.Sound("assets/music/rosie_remix.mp3")
+rosie_music = pygame.mixer.Sound("assets/music/rosie_remix.ogg")
 rosie_music.set_volume(.7)
 
 
 
 # Load sound effects
 
-heaven_music = pygame.mixer.Sound("assets/music/heaven.mp3")
+heaven_music = pygame.mixer.Sound("assets/music/heaven.ogg")
 heaven_music.set_volume(.7)
 
-stretch_sound = pygame.mixer.Sound("assets/sounds/stretch.mp3")
+stretch_sound = pygame.mixer.Sound("assets/sounds/stretch.ogg")
 stretch_sound.set_volume(.9)
-grow_sound = pygame.mixer.Sound("assets/sounds/grow.mp3")
+grow_sound = pygame.mixer.Sound("assets/sounds/grow.ogg")
 grow_sound.set_volume(1.5)
-nom_sound = pygame.mixer.Sound("assets/sounds/nom.mp3")
+nom_sound = pygame.mixer.Sound("assets/sounds/nom.ogg")
 nom_sound.set_volume(.9)
-drink_sound = pygame.mixer.Sound("assets/sounds/drink.mp3")
+drink_sound = pygame.mixer.Sound("assets/sounds/drink.ogg")
 drink_sound.set_volume(.9)
-drink_long_sound = pygame.mixer.Sound("assets/sounds/drink_long.mp3")
+drink_long_sound = pygame.mixer.Sound("assets/sounds/drink_long.ogg")
 drink_long_sound.set_volume(.9)
-squeeky_sound = pygame.mixer.Sound("assets/sounds/squeeky.mp3")
+squeeky_sound = pygame.mixer.Sound("assets/sounds/squeeky.ogg")
 squeeky_sound.set_volume(.9)
 
 
-beep_sound = pygame.mixer.Sound("assets/sounds/short_beep.wav")
-go_sound = pygame.mixer.Sound("assets/sounds/go.wav")
-crash_sound = pygame.mixer.Sound("assets/sounds/crash.mp3")
-honk_sound = pygame.mixer.Sound("assets/sounds/honk.mp3")
-honk2_sound = pygame.mixer.Sound("assets/sounds/honk2.wav")
-burp_sound = pygame.mixer.Sound("assets/sounds/burp.mp3")
-burp_long_sound = pygame.mixer.Sound("assets/sounds/burp.mp3")
+beep_sound = pygame.mixer.Sound("assets/sounds/short_beep.ogg")
+go_sound = pygame.mixer.Sound("assets/sounds/go.ogg")
+crash_sound = pygame.mixer.Sound("assets/sounds/crash.ogg")
+honk_sound = pygame.mixer.Sound("assets/sounds/honk.ogg")
+honk2_sound = pygame.mixer.Sound("assets/sounds/honk2.ogg")
+burp_sound = pygame.mixer.Sound("assets/sounds/burp.ogg")
+burp_long_sound = pygame.mixer.Sound("assets/sounds/burp.ogg")
 beep_sound.set_volume(.5)
 go_sound.set_volume(.5)
 crash_sound.set_volume(.5)
 honk_sound.set_volume(.7)
 honk2_sound.set_volume(.7)
-burp_sound.set_volume(1.5)
-burp_long_sound.set_volume(1.5)
+burp_sound.set_volume(3)
+burp_long_sound.set_volume(3)
 random_sounds = [honk_sound, honk2_sound, burp_sound, burp_long_sound]
 last_sound_time = 5
 play_beep = False
 
 # Screen settings
-HEIGHT = 800
-WIDTH = int(HEIGHT+HEIGHT*1/3)
+HEIGHT = 720 #800
+WIDTH = 1280 #int(HEIGHT+HEIGHT*1/3)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Drunken Snake")
 button_font = pygame.font.Font(None, 25)
@@ -117,7 +129,7 @@ beer_pos1 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT 
 beer_pos2 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
 food_spawned = True
 beer_spawned = True
-display_big_beer = False
+
 
 
 
@@ -137,8 +149,8 @@ results_running = True
 
 
 
-def pregame_loop():
-    global pregame_running, game_running, results_running, old_countdown_value, clock, points
+async def pregame_loop():
+    global pregame_running, game_running, results_running, old_countdown_value, clock, points, display_big_beer
     print('PREGAME LOOP')
 
     clock = pygame.time.Clock()
@@ -149,6 +161,7 @@ def pregame_loop():
     TIMER = 85  # Game length in seconds
     points = 0
     BG_COLOR = WHITE
+    display_big_beer = False
     
     old_countdown_value = 100
 
@@ -178,7 +191,7 @@ def pregame_loop():
         display_text(f'Points: {points}', 36, BLACK, (10, 10))
         display_text(f'{int(TIMER)}s', 36, BLACK, (10, 50))
         display_text(f'{drunkness/10}‰', 60, BLACK, (WIDTH//2-10, 10))
-        display_text(f'Speed: {snake_speed}', 20, GREY, (10, 90))
+        #display_text(f'Speed: {snake_speed}', 20, GREY, (10, 90))
         
         elapsed = pygame.time.get_ticks()
         if elapsed < fade_start_time:
@@ -223,8 +236,9 @@ def pregame_loop():
 
         pygame.display.update()
         clock.tick(FPS)
+    await asyncio.sleep(0)
 
-def restart_main_loop():
+async def restart_main_loop():
     global pregame_running, game_running, results_running, old_countdown_value, clock
     global snake_pos, snake_body, snake_speed, snake_angle, snake_length, snake_width, fat_factor
     global drunkness, food_pos1, food_pos2, beer_pos1, beer_pos2
@@ -251,10 +265,11 @@ def restart_main_loop():
     beer_pos1 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
     beer_pos2 = np.array([random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)])
 
-    pregame_loop()
-    main_loop()
+    await pregame_loop()
+    await main_loop()
+    await asyncio.sleep(0)
 
-def results_loop():
+async def results_loop():
     global results_running, clock, button_font
     print('RESULTS LOOP')
 
@@ -280,7 +295,7 @@ def results_loop():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for button in buttons:
                     if button["rect"].collidepoint(event.pos):
-                        button["action"]()
+                        await button["action"]()
 
         # Draw buttons
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -296,8 +311,10 @@ def results_loop():
         display_text(f'{drunkness/10}‰', 45, BLACK, (WIDTH//3, 450))
         pygame.display.update()
         clock.tick(FPS)
+    
+    await asyncio.sleep(0)
 
-def main_loop():
+async def main_loop():
     global game_running, results_running, BG_COLOR, drunkness, points
     global last_sound_time
     global break_snake_loop, snake_angle, snake_speed, snake_length, snake_width
@@ -308,6 +325,10 @@ def main_loop():
     
     
     start_time = pygame.time.get_ticks()
+
+    # Flags for holding mouse button
+    holding_left = False
+    holding_right = False
 
     while game_running:
         screen.fill(BG_COLOR)
@@ -344,25 +365,40 @@ def main_loop():
             snake_speed = 4
             BG_COLOR = YELLOWBLACK
         
+
         # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_running = False
                 results_running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                    mouse_pos = pygame.mouse.get_pos()
-                    print('mouse_pos: ', mouse_pos)
-                    if mouse_pos[0] < WIDTH//2:
-                        snake_angle -= 3  # Smooth turn left
-                    if mouse_pos[0] > WIDTH//2:
-                        snake_angle += 3  # Smooth turn right
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                print('mouse_pos:', mouse_pos)
+                if event.button == 1:  # Left mouse button
+                    if mouse_pos[0] < WIDTH // 2:
+                        holding_left = True  # Start turning left
+                    elif mouse_pos[0] > WIDTH // 2:
+                        holding_right = True  # Start turning right
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:  # Left mouse button released
+                    holding_left = False
+                    holding_right = False
+
+        # Continuous turning while holding mouse button
+        if holding_left:
+            snake_angle -= 3
+        if holding_right:
+            snake_angle += 3
+
+        #key handling
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
             snake_angle -= 3  # Smooth turn left
         if keys[pygame.K_RIGHT]:
             snake_angle += 3  # Smooth turn right
-            
 
+
+    
         
         # Drunk movement effect
         if drunkness > 0:
@@ -539,7 +575,7 @@ def main_loop():
         display_text(f'Points: {points}', 36, BLACK, (10, 10))
         display_text(f'{int(time_left)}s', 36, BLACK, (10, 50))
         display_text(f'{drunkness/10}‰', 60, BLACK, (WIDTH//2-10, 10))
-        display_text(f'Speed: {snake_speed}', 20, GREY, (10, 90))
+        #display_text(f'Speed: {snake_speed}', 20, GREY, (10, 90))
         
 
         # Play a random sound every 10 seconds
@@ -553,12 +589,14 @@ def main_loop():
         clock.tick(FPS)
     
     ## RESULTS LOOP
-    results_loop()
+    await results_loop()
+
+    await asyncio.sleep(0)
 
 
-pregame_loop()
+asyncio.run(pregame_loop())
 
-main_loop()
+asyncio.run(main_loop())
 
 
 
